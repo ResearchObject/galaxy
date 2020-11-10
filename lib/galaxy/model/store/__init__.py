@@ -12,6 +12,7 @@ from bdbag import bdbag_api as bdb
 from boltons.iterutils import remap
 from sqlalchemy.orm import eagerload_all
 from sqlalchemy.sql import expression
+from rocrate import rocrate as roc
 
 from galaxy.exceptions import MalformedContents, ObjectNotFound
 from galaxy.security.idencoding import IdEncodingHelper
@@ -1425,6 +1426,15 @@ class BagArchiveModelExportStore(BagDirectoryModelExportStore):
         shutil.move(rval, self.out_file)
         shutil.rmtree(self.export_directory)
 
+class ROCrateDirectoryModelExportStore(DirectoryModelExportStore):
+    def __init__(self, out_directory, **kwds):        
+        self.crate = roc.ROCrate() # empty RO-Crate for now
+        super().__init__(out_directory, **kwds)
+
+    def _finalize(self):
+        # write ./ro-crate-metadata.json        
+        self.crate.metadata.write(self.export_directory)
+        super()._finalize()
 
 def tar_export_directory(export_directory, out_file, gzip):
     tarfile_mode = "w"

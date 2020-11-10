@@ -107,6 +107,7 @@ def main(argv=None):
         "tar": store.TarModelExportStore,
         "bag_directory": store.BagDirectoryModelExportStore,
         "bag_archive": store.BagArchiveModelExportStore,
+        "rocrate_directory": store.ROCrateDirectoryModelExportStore,
     }
     store_class = export_types[export_type]
     export_kwds = {
