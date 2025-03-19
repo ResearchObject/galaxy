@@ -611,6 +611,7 @@ def validate_other_entities(ro_crate: ROCrate):
 def validate_invocation_crate_directory(crate_directory):
     # first validate against the Workflow Run Crate profile
     validate_with_roc_validator(crate_directory=crate_directory, profile="workflow-run-crate-0.5")
+    validate_with_roc_validator(crate_directory=crate_directory, profile="provenance-run-crate-0.5")
 
     # then do Galaxy-specific validation
     crate = open_ro_crate(crate_directory)
@@ -633,6 +634,7 @@ def validate_invocation_crate_directory(crate_directory):
 def validate_invocation_collection_crate_directory(crate_directory):
     # first validate against the Workflow Run Crate profile
     validate_with_roc_validator(crate_directory=crate_directory, profile="workflow-run-crate-0.5")
+    validate_with_roc_validator(crate_directory=crate_directory, profile="provenance-run-crate-0.5")
     # TODO: then check the tests below to see if they can be removed thanks to roc-validator
 
     # then do Galaxy-specific validation
