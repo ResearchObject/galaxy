@@ -130,20 +130,18 @@ class WorkflowRunCrateProfileBuilder:
             if not self.file_entities.get(wfda.dataset.dataset.id):
                 dataset_formal_param = self._add_dataset_formal_parameter(wfda.dataset, crate)
                 crate.mainEntity.append_to("input", dataset_formal_param)
-                properties = {
-                    "exampleOfWork": {"@id": dataset_formal_param.id},
-                }
+                properties = {}
                 file_entity = self._add_file(wfda.dataset, properties, crate)
+                file_entity["exampleOfWork"] = dataset_formal_param
                 self.create_action.append_to("object", file_entity)
 
         for wfda in self.invocation.output_datasets:
             if not self.file_entities.get(wfda.dataset.dataset.id):
                 dataset_formal_param = self._add_dataset_formal_parameter(wfda.dataset, crate)
                 crate.mainEntity.append_to("output", dataset_formal_param)
-                properties = {
-                    "exampleOfWork": {"@id": dataset_formal_param.id},
-                }
+                properties = {}
                 file_entity = self._add_file(wfda.dataset, properties, crate)
+                file_entity["exampleOfWork"] = dataset_formal_param
                 self.create_action.append_to("result", file_entity)
 
     def _add_collection(
@@ -297,7 +295,7 @@ class WorkflowRunCrateProfileBuilder:
         for step in steps:
             if step.type == "tool":
                 # Create a unique HowToStep entity for each step
-                step_id = f"step_{position[0]}"
+                step_id = f"#step_{position[0]}_{step.tool_id}"
                 step_description = None
                 if step.annotations:
                     annotations_list = [annotation.annotation for annotation in step.annotations if annotation]
@@ -311,12 +309,12 @@ class WorkflowRunCrateProfileBuilder:
                         properties={
                             "@type": "HowToStep",
                             "position": position[0],
-                            "name": step.tool_id,
+                            "name": f"Step {position[0]}: {step.tool_id}",
                             "description": step_description,
-                            "workExample": f"#{step.tool_id}",
                         },
                     )
                 )
+                step_entity["workExample"] = crate.get(f"#{step.tool_id}")
 
                 # Append the HowToStep entity to the workflow steps list
                 step_entities.append(step_entity)
@@ -394,11 +392,12 @@ class WorkflowRunCrateProfileBuilder:
                     "name": self.workflow.name,
                     "startTime": self.invocation.workflow.create_time.isoformat(),
                     "endTime": self.invocation.workflow.update_time.isoformat(),
-                    "instrument": {"@id": crate.mainEntity["@id"]},
                 },
             )
         )
+        self.create_action["instrument"] = crate.mainEntity
         crate.root_dataset.append_to("mentions", self.create_action)
+        self.roc_engine_run["result"] = self.create_action
 
     def _add_engine_run(self, crate: ROCrate):
         roc_engine = crate.add(SoftwareApplication(crate, properties={"name": "Galaxy workflow engine"}))
@@ -552,12 +551,12 @@ class WorkflowRunCrateProfileBuilder:
         return crate.add(
             ContextEntity(
                 crate,
-                str(hda.dataset.uuid),
+                f"{hda.dataset.uuid}-param",
                 properties={
                     "@type": "FormalParameter",
                     "additionalType": "File",
                     "description": self._get_association_description(hda),
-                    "name": hda.name,
+                    "name": f"{hda.name} (parameter)",
                 },
             )
         )
@@ -573,7 +572,7 @@ class WorkflowRunCrateProfileBuilder:
                     "@type": "FormalParameter",
                     "additionalType": "Collection",
                     "description": self._get_association_description(hdca),
-                    "name": hdca.name,
+                    "name": f"{hdca.name} (parameter)",
                 },
             )
         )
