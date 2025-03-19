@@ -276,6 +276,7 @@ class WorkflowRunCrateProfileBuilder:
         # Add tools used in the workflow
         self._add_tools(crate)
         self._add_steps(crate)
+        crate.mainEntity.append_to("@type", "HowTo")
 
     def _add_steps(self, crate: ROCrate):
         """
